@@ -45,6 +45,10 @@
                 }
             }
 
+            html.busy {
+                cursor: not-allowed !important;
+            }
+
             body {
                 font-family: Arial, Helvetica, sans-serif;
             }
@@ -222,7 +226,11 @@
             import Game from "./game.js";
 
             const rounds = 5;
-            let busy = true;
+            let _busy = true;
+            const setBusy = busy => {
+                _busy = busy;
+                document.documentElement.classList.toggle('busy', busy);
+            };
 
             (() => {
                 // setup
@@ -252,10 +260,10 @@
 
             cards.forEach((card, i) => {
                 card.addEventListener('click', () => {
-                    if (busy) return;
+                    if (_busy) return;
                     if (card.classList.contains('flipped')) return;
 
-                    busy = true;
+                    setBusy(true);
 
                     card.classList.add('animated', 'flipped');
                     setTimeout(() => {
@@ -266,7 +274,7 @@
 
             game.addEventListener(Game.Events.START, () => {
                 roundCounter.append(...counts);
-                busy = true;
+                setBusy(true);
             });
 
             game.addEventListener(Game.Events.DEAL, ({deal}) => {
@@ -282,7 +290,7 @@
                 }, 1000);
                 setTimeout(() => {
                     container.classList.remove('deal');
-                    busy = false;
+                    setBusy(false);
                 }, 2000);
             });
 
