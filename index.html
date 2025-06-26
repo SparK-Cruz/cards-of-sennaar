@@ -1,0 +1,317 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <meta charset="utf8" />
+        <title>Cards of Sennaar</title>
+        <style>
+            @font-face {
+                font-family: 'Sennaar Devotee';
+                src: url('./lib/devotee.ttf');
+            }
+
+            @keyframes deal {
+                0% {
+                    width: 100%;
+                }
+                50% {
+                    width: 0%;
+                }
+                100% {
+                    width: 100%;
+                }
+            }
+
+            @keyframes card-flip-face-show {
+                0% {
+                    transform: scaleX(0);
+                }
+                50% {
+                    transform: scaleX(0);
+                }
+                100% {
+                    transform: scaleX(1);
+                }
+            }
+            @keyframes card-flip-face-hide {
+                0% {
+                    transform: scaleX(1);
+                }
+                50% {
+                    transform: scaleX(0);
+                }
+                100% {
+                    transform: scaleX(0);
+                }
+            }
+
+            body {
+                font-family: Arial, Helvetica, sans-serif;
+            }
+
+            .game-table {
+                display: grid;
+                grid-template-columns: 128px 1fr;
+            }
+            .game-table .cpu-score,
+            .game-table .player-score {
+                grid-column: 2;
+                min-height: 48px;
+                padding: 16px;
+
+                display: flex;
+                flex-flow: row nowrap;
+                gap: 5px;
+                align-items: center;
+            }
+
+            .game-table .round-counter {
+                display: flex;
+                flex-flow: column;
+                gap: 5px;
+            }
+            .game-table .round-count {
+                position: relative;
+                overflow: hidden;
+                width: 48px;
+                height: 48px;
+                border-radius: 50%;
+                background: radial-gradient(circle, rgba(237, 221, 83, 1) 0%, rgba(255, 255, 0, 1) 40%, rgba(119, 102, 0, 1) 80%);
+                background-color: rgba(119, 102, 0, 1);
+                background-position: -2px -2px;
+                background-size: 110%;
+                background-repeat: no-repeat;
+                box-shadow: 2px 2px 2px 0px black;
+            }
+            .game-table .round-count::after {
+                content: '';
+                position: absolute;
+                display: block;
+                width: calc(100% + 4px);
+                height: calc(100% + 4px);
+                top: 0px;
+                left: 0px;
+                box-shadow: inset -3px -3px 3px 2px black;
+            }
+
+            .container {
+                display: flex;
+                flex-flow: row nowrap;
+                gap: 16px;
+                overflow: hidden;
+            }
+
+            .container.deal {
+                animation: deal 2s;
+            }
+
+            .card {
+                height: 256px;
+                width: 160px;
+                margin: 0px 16px;
+                margin-bottom: 5px;
+            }
+
+            .card .card-wrapper {
+                position: relative;
+                display: flex;
+                flex-flow: row nowrap;
+                border-radius: 5px;
+                height: min-content;
+                width: min-content;
+            }
+
+            .card .card-face {
+                position: absolute;
+                display: block;
+                border-radius: inherit;
+                height: 246px;
+                width: 150px;
+                background-color: #fe0;
+                border: 5px solid #b90;
+                color: #b90;
+                top: 0;
+                left: 0;
+                box-shadow: 2px 2px 2px 0px black;
+            }
+
+            .card .card-face.front {
+                transform: scaleX(0);
+                font-family: 'Sennaar Devotee';
+                font-size: 72px;
+            }
+            .card .card-face.front span {
+                display: block;
+                text-align: center;
+                margin: calc(50%) auto;
+                margin-bottom: 0;
+            }
+            .card .card-face.front span::before {
+                content: 'Mb';
+            }
+            .card.a .card-face.front span::before {
+                content: 'd';
+            }
+            .card.b .card-face.front span::before {
+                content: 'Mw';
+            }
+            .card.c .card-face.front span::before {
+                content: 'Md';
+            }
+            .card.d .card-face.front span::before {
+                content: 'M';
+            }
+
+            .card .card-face.back {
+                transform: scaleX(1);
+                font-size: 30px;
+                cursor: pointer;
+            }
+            .card .card-face.back .card-back-graphic {
+                content: '';
+                display: block;
+                width: 100%;
+                height: 100%;
+                background-color: #b90;
+                mask-size: cover;
+                mask-repeat: no-repeat;
+                mask-image: url('./lib/back.png');
+            }
+
+            .card.flipped .card-face.front {
+                transform: scaleX(1);
+            }
+            .card.flipped .card-face.back {
+                transform: scaleX(0);
+            }
+
+            .card.animated .card-face.front {
+                animation: card-flip-face-hide 1s ease-in-out;
+            }
+            .card.animated .card-face.back {
+                animation: card-flip-face-show 1s ease-in-out;
+            }
+
+            .card.flipped.animated .card-face.front {
+                animation: card-flip-face-show 1s ease-in-out;
+            }
+            .card.flipped.animated .card-face.back {
+                animation: card-flip-face-hide 1s ease-in-out;
+            }
+        </style>
+    </head>
+    <body>
+        <div class="game-table">
+            <div class="cpu-score"></div>
+            <div class="round-counter">
+                <div class="round-count"></div>
+            </div>
+            <div class="container">
+                <div class="card flipped">
+                    <div class="card-wrapper">
+                        <div class="card-face front"><span></span></div>
+                        <div class="card-face back">
+                            <div class="card-back-graphic"></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="player-score"></div>
+        </div>
+        <script type="module">
+            import Game from "./game.js";
+
+            const rounds = 5;
+
+            (() => {
+                // setup
+                const template = document.querySelector('div.card');
+                for(let i=0; i<3; i++) {
+                    const clone = template.cloneNode(true);
+                    clone.classList.add(['c', 'b', 'a'][i]);
+                    template.parentNode.appendChild(clone);
+                }
+                template.classList.add('d');
+
+                const countTemplate = document.querySelector('div.round-count');
+                for(let i=1; i<rounds; i++) {
+                    const clone = countTemplate.cloneNode(true);
+                    countTemplate.parentNode.appendChild(clone);
+                }
+            })();
+
+            const container = document.querySelector('div.container');
+            const cards = [...document.querySelectorAll('div.card')];
+            const roundCounter = document.querySelector('div.round-counter');
+            const playerScore = document.querySelector('div.player-score');
+            const cpuScore = document.querySelector('div.cpu-score');
+            const counts = [...document.querySelectorAll('div.round-count')];
+
+            const game = new Game({ rounds });
+
+            cards.forEach((card, i) => {
+                card.addEventListener('click', () => {
+                    if (card.classList.contains('flipped')) return;
+
+                    card.classList.add('animated', 'flipped');
+                    setTimeout(() => {
+                        game.pick(i);
+                    }, 1000);
+                });
+            });
+
+            game.addEventListener(Game.Events.START, () => {
+                roundCounter.append(...counts);
+            });
+
+            game.addEventListener(Game.Events.DEAL, ({deal}) => {
+                container.classList.add('deal');
+                cards.forEach(card => {
+                    card.classList.remove('animated');
+                });
+                setTimeout(() => {
+                    cards.forEach((card, i) => {
+                        card.classList.remove('flipped', 'a', 'b', 'c', 'd');
+                        card.classList.add(deal[i]);
+                    });
+                }, 1000);
+                setTimeout(() => {
+                    container.classList.remove('deal');
+                }, 2000);
+            });
+
+            game.addEventListener(Game.Events.CPU_PICK, ({position}) => {
+                cards[position].classList.add('flipped', 'animated');
+                setTimeout(() => {
+                    game.deal();
+                }, 2000);
+            });
+
+            const updateScore = () => {
+                const { player, cpu } = game.score;
+
+                setTimeout(() => {
+                    playerScore.append(...counts.slice(0, player));
+                    cpuScore.append(...counts.slice(player, player + cpu));
+                }, 2000);
+            };
+            game.addEventListener(Game.Events.PLAYER_SCORE, updateScore);
+            game.addEventListener(Game.Events.CPU_SCORE, updateScore);
+
+            game.addEventListener(Game.Events.PLAYER_WIN, () => {
+                const { player, cpu } = game.score;
+                alert(`YOU WON! ${player}:${cpu}`);
+                game.start();
+            });
+
+            game.addEventListener(Game.Events.CPU_WIN, () => {
+                const { player, cpu } = game.score;
+                alert(`YOU LOST! ${cpu}:${player}`);
+                game.start();
+            });
+
+            setTimeout(() => {
+                game.start();
+            }, 5000);
+        </script>
+    </body>
+</html>
