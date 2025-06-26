@@ -289,6 +289,8 @@
                     cards.forEach((card, i) => {
                         card.classList.remove('flipped', 'a', 'b', 'c', 'd');
                         card.classList.add(deal[i]);
+
+                        card.style.transform = `rotate(${(Math.random()*3 - 1.5).toFixed(2)}deg)`;
                     });
                 }, 1000);
                 setTimeout(() => {
