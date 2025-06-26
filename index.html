@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html>
+<html class="busy">
     <head>
         <meta charset="utf8" />
         <link rel="icon" href="./favicon.ico">
@@ -289,8 +289,10 @@
                     });
                 }, 1000);
                 setTimeout(() => {
-                    container.classList.remove('deal');
                     setBusy(false);
+                }, 1700);
+                setTimeout(() => {
+                    container.classList.remove('deal');
                 }, 2000);
             });
 
