@@ -46,7 +46,7 @@
             }
 
             html.busy {
-                cursor: not-allowed !important;
+                cursor: not-allowed;
             }
 
             body {
@@ -170,6 +170,9 @@
                 transform: scaleX(1);
                 font-size: 30px;
                 cursor: pointer;
+            }
+            html.busy .card .card-face.back {
+                cursor: not-allowed;
             }
             .card .card-face.back .card-back-graphic {
                 content: '';
