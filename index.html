@@ -292,7 +292,7 @@
                 setTimeout(() => {
                     playerScore.append(...counts.slice(0, player));
                     cpuScore.append(...counts.slice(player, player + cpu));
-                }, 2000);
+                }, 1500);
             };
             game.addEventListener(Game.Events.PLAYER_SCORE, updateScore);
             game.addEventListener(Game.Events.CPU_SCORE, updateScore);
